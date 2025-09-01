@@ -54,6 +54,11 @@ def price_filter(currency: str, min_price: float, max_price: float) -> str:
     # using a field for each currency is fast. 1.75x the price_usd query
     # return f"(price_{currency.lower()} >= {min_price} and price_{currency.lower()} <= {max_price})"
 
+def per_market_exists(market: str) -> str:
+    return f"per_market_price contains sameElement(market == {market})"
+
+def per_market_match(market: str, min_price: float, max_price: float) -> str:
+    return f"per_market_price contains sameElement(market == {market}, price >= {min_price} and price <= {max_price})"
 
 def generate_price_filter_query(min_price: float, max_price: float, currency: str) -> str:
     if min_price > max_price:
@@ -76,6 +81,26 @@ def generate_price_filter_query(min_price: float, max_price: float, currency: st
     return " or ".join(or_conditions)
 
 def generate_price_filter_query_per_market(min_price: float, max_price: float, currency: str) -> str:
+    if min_price > max_price:
+        raise ValueError("min_price cannot be greater than max_price.")
+
+    source_currency = currency.upper()
+    or_conditions: list[str] = []
+
+    for target_currency in all_currencies:
+        per_market_clause = per_market_match(target_currency, min_price, max_price)
+        per_market_exists_clause = per_market_exists(target_currency)
+
+        if (source_currency, target_currency) in rates:
+            rate = rates[(source_currency, target_currency)]
+            converted_min = min_price * rate
+            converted_max = max_price * rate
+            general_clause = price_filter(target_currency, converted_min, converted_max)
+
+            or_conditions.append(f"({per_market_clause}) or ((not {per_market_exists_clause}) and {general_clause})")
+        else:
+            or_conditions.append(f"({per_market_clause})")
+
     return " or ".join(or_conditions)
 
 def main() -> None:
@@ -89,9 +114,13 @@ def main() -> None:
     parser.add_argument('--max_price', type=float, required=True, help='Maximum price.')
     parser.add_argument('--currency', type=str, required=True,
                         help='The currency for the given min/max price (e.g., USD).')
-
+    parser.add_argument('--per_market', action="store_true", help='Enable per market pricing.')
     args = parser.parse_args()
-    print(generate_price_filter_query(args.min_price, args.max_price, args.currency))
+
+    if args.per_market:
+        print(generate_price_filter_query_per_market(args.min_price, args.max_price, args.currency))
+    else:
+        print(generate_price_filter_query(args.min_price, args.max_price, args.currency))
 
 
 if __name__ == "__main__":
