@@ -6,7 +6,7 @@ import json
 def parse_currencies(root) -> set[str]:
     currencies = []
     for currency in root.findall('.//currency'):
-        currencies.append(currency.get('code'))
+        currencies.append(currency.get('code').lower())
 
     return sorted(currencies)
 
@@ -18,25 +18,34 @@ def convert_currency_xml_to_vespa_jsonl(xml_file) -> list[str]:
 
     currencies = parse_currencies(root)
 
-    # Add USD to USD conversion (factor = 1.0)
-    usd_doc = {
-        "put": "id:shopping:currency::usd",
-        "fields": {"factor": 1.0}
-    }
-    currency_rates = [json.dumps(usd_doc) + '\n']
+    rate_map = {}
+    for r in root.findall('.//rate'):
+        f = r.get('from')
+        t = r.get('to')
+        rate = float(r.get('rate'))
+        rate_map.setdefault(f.lower(), {})[t.lower()] = rate
 
-    # Find all rate elements where 'to' attribute is 'USD'
-    for rate in root.findall('.//rate[@to="USD"]'):
-        currency = rate.get('from').lower()
-        factor = float(rate.get('rate'))
+    usd_factors = {"usd": 1.0}
+    for r in root.findall('.//rate[@to="USD"]'):
+        usd_factors[r.get('from').lower()] = float(r.get('rate'))
 
+    # # Add USD to USD conversion (factor = 1.0)
+    # usd_doc = {
+    #     "put": "id:shopping:currency::usd",
+    #     "fields": {"factor": 1.0}
+    # }
+    # currency_rates = [json.dumps(usd_doc) + '\n']
+
+    currency_rates = []
+    for code in currencies:
         # Create Vespa document
         doc = {
-            "put": f"id:shopping:currency::{currency}",
+            "put": f"id:shopping:currency::{code}",
             "fields": {
-                "code": currency,
-                "idx": currencies.index(currency.upper()),
-                "factor": factor,
+                "code": code,
+                "idx": currencies.index(code),
+                "factor": usd_factors[code],
+                "factor_map": rate_map[code],
             }
         }
 

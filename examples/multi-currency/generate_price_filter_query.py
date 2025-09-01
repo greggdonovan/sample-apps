@@ -75,6 +75,8 @@ def generate_price_filter_query(min_price: float, max_price: float, currency: st
 
     return " or ".join(or_conditions)
 
+def generate_price_filter_query_per_market(min_price: float, max_price: float, currency: str) -> str:
+    return " or ".join(or_conditions)
 
 def main() -> None:
     """

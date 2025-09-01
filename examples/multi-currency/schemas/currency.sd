@@ -5,17 +5,17 @@ schema currency {
             attribute: fast-search
             rank: filter
         }
-
         field code type string {
             indexing: attribute | summary
             attribute: fast-search
         }
-
-        # multiplier for converting to USD
         field factor type double {
             indexing: attribute | summary
             attribute: fast-search
             rank: filter
+        }
+        field factor_map type map<string, double> {
+            indexing: summary
         }
     }
 }

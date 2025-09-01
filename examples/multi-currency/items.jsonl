@@ -1,4 +1,4 @@
-{"put": "id:shopping:item::item-1", "fields": {"currency_ref": "id:shopping:currency::usd", "price": 3836, "item_name": "emerald gemstone bracelet"}}
+{"put": "id:shopping:item::item-1", "fields": {"currency_ref": "id:shopping:currency::usd", "price": 3836, "item_name": "emerald gemstone bracelet", "per_market_price": [{"market": "usd", "price": 3836}, {"market": "nok", "price": "3999"}]}}
 {"put": "id:shopping:item::item-2", "fields": {"currency_ref": "id:shopping:currency::usd", "price": 14, "item_name": "Handmade ceramic ring dish"}}
 {"put": "id:shopping:item::item-3", "fields": {"currency_ref": "id:shopping:currency::usd", "price": 45, "item_name": "Handmade wooden cutting board"}}
 {"put": "id:shopping:item::item-4", "fields": {"currency_ref": "id:shopping:currency::usd", "price": 34, "item_name": "Personalized wooden cutting board"}}
