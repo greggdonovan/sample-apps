@@ -55,10 +55,10 @@ def price_filter(currency: str, min_price: float, max_price: float) -> str:
     # return f"(price_{currency.lower()} >= {min_price} and price_{currency.lower()} <= {max_price})"
 
 def per_market_exists(market: str) -> str:
-    return f"per_market_price contains sameElement(market == {market})"
+    return f"per_market_price contains sameElement(market contains '{market.lower()}')"
 
 def per_market_match(market: str, min_price: float, max_price: float) -> str:
-    return f"per_market_price contains sameElement(market == {market}, price >= {min_price} and price <= {max_price})"
+    return f"per_market_price contains sameElement(market contains '{market.lower()}', price >= {min_price}, price <= {max_price})"
 
 def generate_price_filter_query(min_price: float, max_price: float, currency: str) -> str:
     if min_price > max_price:
@@ -87,7 +87,7 @@ def generate_price_filter_query_per_market(min_price: float, max_price: float, c
     prefer_clause = per_market_match(source_currency, min_price, max_price)
     exists_clause = per_market_exists(source_currency)
     fallback_clause = generate_price_filter_query(min_price, max_price, source_currency)
-    return f"({prefer_clause}) or ((not {exists_clause}) and ({fallback_clause}))"
+    return f"({prefer_clause}) or (!({exists_clause}) and ({fallback_clause}))"
 
 def main() -> None:
     """

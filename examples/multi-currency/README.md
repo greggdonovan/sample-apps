@@ -86,7 +86,10 @@ vespa query 'select * from item where (currency_ref matches "id:shopping:currenc
    ```bash
    vespa query yql="select * from item where userQuery() AND ($(python3 generate_price_filter_query.py --min_price 20 --max_price 100 --currency USD))" query="vintage"
    ```
-
+5. **Filter by all currencies within a range and account for per market pricing**:
+   ```bash
+    vespa query yql="select * from item where $(python3 generate_price_filter_query.py --min_price 20 --max_price 100 --currency USD --per_market)"
+   ```
 
 ## Key Features
 
