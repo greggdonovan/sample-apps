@@ -83,25 +83,11 @@ def generate_price_filter_query(min_price: float, max_price: float, currency: st
 def generate_price_filter_query_per_market(min_price: float, max_price: float, currency: str) -> str:
     if min_price > max_price:
         raise ValueError("min_price cannot be greater than max_price.")
-
     source_currency = currency.upper()
-    or_conditions: list[str] = []
-
-    for target_currency in all_currencies:
-        per_market_clause = per_market_match(target_currency, min_price, max_price)
-        per_market_exists_clause = per_market_exists(target_currency)
-
-        if (source_currency, target_currency) in rates:
-            rate = rates[(source_currency, target_currency)]
-            converted_min = min_price * rate
-            converted_max = max_price * rate
-            general_clause = price_filter(target_currency, converted_min, converted_max)
-
-            or_conditions.append(f"({per_market_clause}) or ((not {per_market_exists_clause}) and {general_clause})")
-        else:
-            or_conditions.append(f"({per_market_clause})")
-
-    return " or ".join(or_conditions)
+    prefer_clause = per_market_match(source_currency, min_price, max_price)
+    exists_clause = per_market_exists(source_currency)
+    fallback_clause = generate_price_filter_query(min_price, max_price, source_currency)
+    return f"({prefer_clause}) or ((not {exists_clause}) and ({fallback_clause}))"
 
 def main() -> None:
     """
