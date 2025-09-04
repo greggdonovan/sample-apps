@@ -3,9 +3,15 @@
 <services version="1.0" xmlns:deploy="vespa" xmlns:preprocess="properties">
 
   <container id='default' version='1.0'>
-    <search/>
+    <search>
+      <chain id="multic" inherits="vespa">
+        <searcher id="ai.vespa.example.MultiCurrencySearcher" bundle="multi-currency-example"/>
+      </chain>
+    </search>
     <document-api/>
-    <nodes count="1"/>
+    <nodes count="1">
+      <jvm options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" />
+    </nodes>
   </container>
 
   <content id='shopping' version='1.0'>
