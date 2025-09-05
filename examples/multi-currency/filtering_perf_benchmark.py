@@ -165,11 +165,12 @@ if __name__ == "__main__":
 
     app = Vespa(url="http://localhost", port=8080)
 
-    from generate_price_filter_query import generate_price_filter_query
+    from generate_price_filter_query import generate_price_filter_query, generate_price_filter_query_per_market
 
     # record the latency for both queries
     lat_multi:  list[float] = []
     lat_single: list[float] = []
+    lat_per_market: list[float] = []
 
     for i in range(1, 1000):
         prices = [random_price_cents() for _ in range(2)]
@@ -182,10 +183,12 @@ if __name__ == "__main__":
 
         multi_currency_where=f"select * from item where {generate_price_filter_query(min_price, max_price, currency.lower())}"
         single_currency_where=f"select * from item where price_usd >= {price_usd_min} and price_usd <= {price_usd_max}"
+        per_market_currency_where=f"select * from item where {generate_price_filter_query_per_market(min_price, max_price, currency.lower())}"
 
         exec_plan = [
             ("multi",  multi_currency_where,  lat_multi),
             ("single", single_currency_where, lat_single),
+            ("per_market", per_market_currency_where, lat_per_market),
         ]
         random.shuffle(exec_plan)
 
@@ -213,6 +216,7 @@ if __name__ == "__main__":
 
     print(f"latency for multi-currency query: {pct(lat_multi, [25, 50, 75, 90, 95, 99])}")
     print(f"latency for price_usd query: {pct(lat_single, [25, 50, 75, 90, 95, 99])}")
+    print(f"latency for per market query: {pct(lat_per_market, [25, 50, 75, 90, 95, 99])}")
 
 
 
