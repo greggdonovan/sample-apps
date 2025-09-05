@@ -82,7 +82,7 @@ public class MultiCurrencySearcher extends Searcher {
             anyCurrencyClause.addItem(perCurrency);
         }
 
-        // 4) AND our filter with the user’s existing root
+        // 4) AND the filter with the user’s existing root
         if (anyCurrencyClause.getItemCount() == 0) {
             return execution.search(query);
         }
@@ -99,6 +99,7 @@ public class MultiCurrencySearcher extends Searcher {
     }
 
     // ---- hardcoded stubs: tiny for first-iteration testing ----
+    // change according to business logic needs
     private Map<String, Double> fetchFromRates(String sourceCurrency) {
         Map<String, Double> m = new HashMap<>();
         switch (sourceCurrency) {
